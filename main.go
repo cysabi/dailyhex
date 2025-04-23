@@ -59,57 +59,60 @@ const (
 	BoardScreen Screen = "see leaderboard"
 )
 
-func appMiddleware(db *buntdb.DB) wish.Middleware {
-	newProg := func(m tea.Model, opts ...tea.ProgramOption) *tea.Program {
-		p := tea.NewProgram(m, opts...)
-		return p
-	}
-	teaHandler := func(s ssh.Session) *tea.Program {
-		pty, _, _ := s.Pty()
-
-		day := day()
-		secret := secret(day)
-		playerId := strings.Split(s.RemoteAddr().String(), ":")[0]
-		playerId = playerId + "_" + strings.Split(s.RemoteAddr().String(), ":")[1]
-		log.Info("new tea: playerId: " + playerId)
-
-		renderer := bubbletea.MakeRenderer(s)
-
-		state := state{
-			db:            db,
-			day:           day,
-			secret:        secret,
-			playerid:      playerId,
-			height:        pty.Window.Height,
-			width:         pty.Window.Width,
-			showCountdown: false,
-			gameState:     Idle,
-			screen:        TitleScreen,
-			styles:        Styles{}.New(renderer, secret),
-		}
-		if state.GetDone() {
-			state.gameState = Win
-		}
-
-		m := Model{state: &state}.New()
-
-		return newProg(m, append(bubbletea.MakeOptions(s), tea.WithAltScreen())...)
-	}
-	return bubbletea.MiddlewareWithProgramHandler(teaHandler, termenv.ANSI256)
-}
-
 func main() {
+	err := os.Mkdir("store", 0744)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	db, err := buntdb.Open("store/data.db")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer func() { db.Shrink(); db.Close() }()
 
 	s, err := wish.NewServer(
 		wish.WithAddress(net.JoinHostPort(host, port)),
 		wish.WithHostKeyPath("store/ssh_id_ed25519"),
 		wish.WithMiddleware(
-			appMiddleware(db),
+			(func() wish.Middleware {
+
+				newProg := func(m tea.Model, opts ...tea.ProgramOption) *tea.Program {
+					p := tea.NewProgram(m, opts...)
+					return p
+				}
+				teaHandler := func(s ssh.Session) *tea.Program {
+					pty, _, _ := s.Pty()
+
+					day := day()
+					secret := secret(day)
+					playerId := strings.Split(s.RemoteAddr().String(), ":")[0]
+					playerId = playerId + "_" + strings.Split(s.RemoteAddr().String(), ":")[1]
+					log.Info("new tea: playerId: " + playerId)
+
+					renderer := bubbletea.MakeRenderer(s)
+
+					state := state{
+						db:            db,
+						day:           day,
+						secret:        secret,
+						playerid:      playerId,
+						height:        pty.Window.Height,
+						width:         pty.Window.Width,
+						showCountdown: false,
+						gameState:     Idle,
+						screen:        TitleScreen,
+						styles:        Styles{}.New(renderer, secret),
+					}
+					if state.GetDone() {
+						state.gameState = Win
+					}
+
+					m := Model{state: &state}.New()
+
+					return newProg(m, append(bubbletea.MakeOptions(s), tea.WithAltScreen())...)
+				}
+				return bubbletea.MiddlewareWithProgramHandler(teaHandler, termenv.TrueColor)
+			})(),
 			activeterm.Middleware(),
 			logging.Middleware(),
 		),
