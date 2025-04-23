@@ -111,9 +111,14 @@ func (m Model) View() string {
 		subtitle = m.state.styles.Subtitle.Foreground(lipgloss.Color(m.state.gameState)).Render(m.Play.StateMsg())
 	}
 
+	color := m.state.secret
+	if m.state.screen == BoardScreen {
+		color = secret(m.state.day + m.state.dayPage)
+	}
+
 	banner := m.state.styles.CharGrade.Margin(2).Render(
 		lipgloss.JoinVertical(0,
-			m.state.styles.Title.Foreground(lipgloss.Color("#"+m.state.secret)).Render("dailyhex!"),
+			m.state.styles.Title.Foreground(lipgloss.Color("#"+color)).Render("dailyhex!"),
 			subtitle,
 		),
 	)
