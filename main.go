@@ -70,6 +70,7 @@ func appMiddleware(db *buntdb.DB) wish.Middleware {
 		day := day()
 		secret := secret(day)
 		playerId := strings.Split(s.RemoteAddr().String(), ":")[0]
+		playerId = playerId + "_" + strings.Split(s.RemoteAddr().String(), ":")[1]
 		log.Info("new tea: playerId: " + playerId)
 
 		renderer := bubbletea.MakeRenderer(s)
@@ -139,11 +140,9 @@ func main() {
 func day() int64 {
 	loc, _ := time.LoadLocation("America/New_York")
 	now := time.Now().In(loc)
-
-	adjusted := now.Add(-11 * time.Hour)
-
-	dayNumber := adjusted.Unix() / (60 * 60 * 24)
-	return dayNumber
+	shifted := now.Add(-11 * time.Hour)
+	midnight := time.Date(shifted.Year(), shifted.Month(), shifted.Day(), 0, 0, 0, 0, loc)
+	return midnight.Unix() / 86400
 }
 
 func secret(day int64) string {

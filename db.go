@@ -21,6 +21,25 @@ func (s state) GetName() string {
 	return out
 }
 
+func (s state) GetBoard() [][]string {
+	var out [][]string
+
+	key := fmt.Sprint(s.day+s.dayPage) + ":" + "*" + ":" + "moves"
+	s.db.View(func(tx *buntdb.Tx) error {
+		return tx.AscendKeys(key, func(key, moves string) bool {
+			pid := strings.Split(key, ":")[1]
+
+			name, _ := tx.Get(fmt.Sprint(pid) + ":" + "name")
+			done, _ := tx.Get(fmt.Sprint(s.day+s.dayPage) + ":" + pid + ":" + "done")
+
+			out = append(out, []string{name, moves, done})
+			return true
+		})
+	})
+
+	return out
+}
+
 func (s state) GetDone() bool {
 	var out string
 	key := fmt.Sprint(s.day) + ":" + fmt.Sprint(s.playerid) + ":" + "done"

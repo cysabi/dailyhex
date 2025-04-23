@@ -37,7 +37,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.state.height = msg.Height
 		m.state.width = msg.Width
 		m.Play.Viewport.Height = m.state.height - 10
-		m.Board.Table.SetHeight(m.state.height - 8)
 
 	case tea.KeyMsg:
 		m.state.showCountdown = false
@@ -107,7 +106,7 @@ func (m Model) View() string {
 	subtitle := m.state.styles.Subtitle.Render("day " + fmt.Sprint(m.state.day))
 	if m.state.screen == BoardScreen {
 		styl := m.state.styles.BoardArrows
-		subtitle = m.state.styles.Subtitle.Render(styl.Render("< ") + m.state.styles.BoardSubtitle.Render("day "+fmt.Sprint(m.state.day+m.state.dayPage)) + styl.Render(" >"))
+		subtitle = m.state.styles.Subtitle.Render(styl.Render("< ") + m.state.styles.BoardNames.Foreground(lipgloss.Color("8")).Render("day "+fmt.Sprint(m.state.day+m.state.dayPage)) + styl.Render(" >"))
 	} else if m.state.gameState != Idle {
 		subtitle = m.state.styles.Subtitle.Foreground(lipgloss.Color(m.state.gameState)).Render(m.Play.StateMsg())
 	}

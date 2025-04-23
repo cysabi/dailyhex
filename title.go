@@ -31,7 +31,7 @@ func (m Title) New() Title {
 
 	form := huh.NewForm(
 		huh.NewGroup(
-			huh.NewInput().Key("name").Value(&username).CharLimit(14).Placeholder("what's ur name?").Prompt("? ").Validate(
+			huh.NewInput().Key("name").Value(&username).CharLimit(maxNameLen).Placeholder("what's ur name?").Prompt("? ").Validate(
 				func(str string) error {
 					if len(str) == 0 {
 						return errors.New("what's ur name!?")
@@ -43,7 +43,7 @@ func (m Title) New() Title {
 				Key("screen").
 				Options(playOption, boardOption),
 		),
-	).WithWidth(21).WithShowHelp(false).WithShowErrors(false).WithTheme(m.state.styles.FormTheme)
+	).WithWidth(formWidth).WithShowHelp(false).WithShowErrors(false).WithTheme(m.state.styles.FormTheme)
 
 	if len(username) > 0 {
 		form.NextField()
@@ -81,14 +81,14 @@ func (m Title) View() string {
 
 func dist() string {
 	loc, _ := time.LoadLocation("America/New_York")
-
 	now := time.Now().In(loc)
-	next11am := time.Date(now.Year(), now.Month(), now.Day(), 11, 0, 0, 0, loc)
-	if now.After(next11am) {
-		next11am = next11am.Add(24 * time.Hour)
+
+	next11 := time.Date(now.Year(), now.Month(), now.Day(), 11, 0, 0, 0, loc)
+	if now.After(next11) {
+		next11 = next11.Add(24 * time.Hour)
 	}
 
-	diff := next11am.Sub(now)
+	diff := next11.Sub(now)
 
 	hours := int(diff.Hours())
 	minutes := int(diff.Minutes()) % 60
