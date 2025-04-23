@@ -60,7 +60,7 @@ const (
 )
 
 func main() {
-	os.Mkdir("store", 0744)
+	_ = os.Mkdir("store", 0744)
 	db, err := buntdb.Open("store/data.db")
 	if err != nil {
 		log.Fatal(err)
