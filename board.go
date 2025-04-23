@@ -64,7 +64,7 @@ func (m Board) View() string {
 
 		moves := strings.Split(row[1], ",")
 		if row[2] == "true" {
-			moves = append(moves, m.state.secret)
+			moves = append(moves, secret(m.state.day+m.state.dayPage))
 		}
 		lenMoves := len(moves)
 		movesSpace := movesWidth/2 - 2
