@@ -69,7 +69,7 @@ func makeFormTheme(r *lipgloss.Renderer, secret string) *huh.Theme {
 	t.Blurred.UnselectedOption = r.NewStyle().Foreground(lipgloss.Color("8"))
 	t.Blurred.SelectedOption = r.NewStyle().Foreground(lipgloss.Color("8"))
 	t.Blurred.TextInput.Text = r.NewStyle().Foreground(lipgloss.Color("8"))
-	t.Blurred.TextInput.Placeholder = t.Blurred.TextInput.Text.Foreground(lipgloss.Color("0"))
+	t.Blurred.TextInput.Placeholder = t.Blurred.TextInput.Text.Foreground(lipgloss.Color("8"))
 
 	// ~ FOCUSED ~
 	t.Focused = t.Blurred
