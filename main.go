@@ -9,11 +9,11 @@ import (
 	"net"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
 	"github.com/charmbracelet/ssh"
 	"github.com/charmbracelet/wish"
@@ -22,6 +22,7 @@ import (
 	"github.com/charmbracelet/wish/logging"
 	"github.com/muesli/termenv"
 	"github.com/tidwall/buntdb"
+	gosh "golang.org/x/crypto/ssh"
 )
 
 const (
@@ -69,6 +70,12 @@ func main() {
 	s, err := wish.NewServer(
 		wish.WithAddress(net.JoinHostPort(host, port)),
 		wish.WithHostKeyPath("store/ssh_id_ed25519"),
+		wish.WithPublicKeyAuth(func(ctx ssh.Context, key ssh.PublicKey) bool {
+			return true
+		}),
+		wish.WithPasswordAuth(func(ctx ssh.Context, password string) bool {
+			return true
+		}),
 		wish.WithMiddleware(
 			(func() wish.Middleware {
 
@@ -78,14 +85,23 @@ func main() {
 				}
 				teaHandler := func(s ssh.Session) *tea.Program {
 					pty, _, _ := s.Pty()
+					ren := bubbletea.MakeRenderer(s)
+
+					if s.PublicKey() == nil {
+						wish.Println(s, ren.NewStyle().Foreground(lipgloss.Color("04")).BorderForeground(lipgloss.Color("04")).Border(lipgloss.OuterHalfBlockBorder(), false, false, false, true).PaddingLeft(2).Render(
+							lipgloss.JoinVertical(0,
+								" ",
+								"welcome! to play, please make a public key with:",
+								ren.NewStyle().Bold(true).Render("ssh-keygen -t ed25519"),
+								"i just need this to keep track of your identity",
+								" ")))
+						s.Exit(1)
+						return nil
+					}
 
 					day := day()
 					secret := secret(day)
-					playerId := strings.Split(s.RemoteAddr().String(), ":")[0]
-					playerId = playerId + "_" + strings.Split(s.RemoteAddr().String(), ":")[1]
-					log.Info("new tea: playerId: " + playerId)
-
-					renderer := bubbletea.MakeRenderer(s)
+					playerId := string(gosh.MarshalAuthorizedKey(s.PublicKey()))
 
 					state := state{
 						db:            db,
@@ -97,7 +113,7 @@ func main() {
 						showCountdown: false,
 						gameState:     Idle,
 						screen:        TitleScreen,
-						styles:        Styles{}.New(renderer, secret),
+						styles:        Styles{}.New(ren, secret),
 					}
 					if state.GetDone() {
 						state.gameState = Win
