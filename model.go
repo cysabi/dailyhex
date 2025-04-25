@@ -104,9 +104,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m Model) View() string {
 	subtitle := m.state.styles.Subtitle.Render("day " + fmt.Sprint(m.state.day))
+	rightArrow := " >"
+	if m.state.dayPage == 0 {
+		rightArrow = " ·"
+	}
 	if m.state.screen == BoardScreen {
 		styl := m.state.styles.BoardArrows
-		subtitle = m.state.styles.Subtitle.Render(styl.Render("< ") + m.state.styles.BoardNames.Foreground(lipgloss.Color("8")).Render("day "+fmt.Sprint(m.state.day+m.state.dayPage)) + styl.Render(" >"))
+		subtitle = m.state.styles.Subtitle.Render(styl.Render("< ") + m.state.styles.BoardNames.Foreground(lipgloss.Color("8")).Render("day "+fmt.Sprint(m.state.day+m.state.dayPage)) + styl.Render(rightArrow))
 	} else if m.state.gameState != Idle {
 		subtitle = m.state.styles.Subtitle.Foreground(lipgloss.Color(m.state.gameState)).Render(m.Play.StateMsg())
 	}

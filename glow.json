@@ -66,12 +66,12 @@
     "unticked": "[ ] "
   },
   "link": {
-    "color": "36",
-    "underline": true
-  },
-  "link_text": {
     "color": "29",
     "bold": true
+  },
+  "link_text": {
+    "color": "36",
+    "underline": true
   },
   "image": {
     "color": "205",
