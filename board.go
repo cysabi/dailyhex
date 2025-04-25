@@ -32,6 +32,9 @@ func (m Board) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.setPage()
 		case tea.KeyRight:
 			m.state.dayPage += 1
+			if m.state.dayPage > 0 {
+				m.state.dayPage = 0
+			}
 			m.setPage()
 		}
 	}
