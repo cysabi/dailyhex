@@ -84,7 +84,7 @@ func (m Board) View() string {
 			countColor = lipgloss.Color("2")
 		}
 
-		moves = append(moves, m.state.styles.CharGrade.Width(3).AlignHorizontal(lipgloss.Right).Foreground(countColor).Render(fmt.Sprint(lenMoves)))
+		moves = append(moves, m.state.styles.CharGrade.Width(3).AlignHorizontal(lipgloss.Right).Foreground(countColor).Bold(row[2] == "true").Render(fmt.Sprint(lenMoves)))
 		rows = append(rows,
 			lipgloss.JoinHorizontal(0,
 				nameStyle.Render(row[0]),
