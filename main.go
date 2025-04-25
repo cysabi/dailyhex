@@ -88,12 +88,15 @@ func main() {
 					ren := bubbletea.MakeRenderer(s)
 
 					if s.PublicKey() == nil {
-						wish.Println(s, ren.NewStyle().Foreground(lipgloss.Color("04")).BorderForeground(lipgloss.Color("04")).Border(lipgloss.OuterHalfBlockBorder(), false, false, false, true).PaddingLeft(2).Render(
+						wish.Println(s, ren.NewStyle().Foreground(lipgloss.Color("05")).BorderForeground(lipgloss.Color("05")).Border(lipgloss.OuterHalfBlockBorder(), false, false, false, true).PaddingLeft(2).Render(
 							lipgloss.JoinVertical(0,
 								" ",
-								"welcome! to play, please make a public key with:",
+								"welcome!! to play, first make a public key with",
+								" ",
 								ren.NewStyle().Bold(true).Render("ssh-keygen -t ed25519"),
+								" ",
 								"i just need this to keep track of your identity",
+								"have fun!",
 								" ")))
 						s.Exit(1)
 						return nil

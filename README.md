@@ -1,17 +1,20 @@
-# dailyhex
+# play wordle, with hex colors ~ right from your terminal!
 
-> **ssh h.rcdis.co -p 2222**
+⏰ resets each day @ 11am rc time <3
 
-- 🎨 guess the hex code of a color, using the wordle ruleset,
-  right from your terminal!
-- ⏰ it resets every day at 11am rc time :D
-- 📊 check out the leaderboard to see everyone's guesses
-  (and how many turns they took)!
+📊 visually see everyone's guesses on the leaderboard
+&nbsp;&nbsp;&nbsp;(and how many turns they all took)
 
-keep in mind
+❓ curious how hex codes work? check out `colorrush.io/learn`
 
-- make sure ur terminal supports truecolor (vscode works)
-- if it asks for a password just hit enter and it'll tell u to gen a default pubkey
-- if you'd like a tutorial on how hex codes work, check out _colorrush.io/learn_
+> make sure ur terminal supports truecolor mode
+> (the one in vscode works)
+>
+> if it prompts u for a pass, just hit enter!
+> ill ask u to make a public ssh key
+>
+> u do currently have to be on the rc wifi to play
+> as a workaround, u can first ssh into the heap cluster
+> then ssh again from inside _(thanks andie!)_
 
-its currently run from the disco pi, so u have to be on the rc wifi to ssh, but i plan to set up a vm for it soon! as a workaround, ssh into the heap cluster and then ssh from there "internally"! (thanks andie!)
+# 🎨 ssh h.rcdis.co -p 2222
