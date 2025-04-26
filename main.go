@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
@@ -61,7 +62,17 @@ const (
 )
 
 func main() {
-	_ = os.Mkdir("store", 0744)
+	if err := os.MkdirAll("store", 0744); err != nil {
+		log.Fatal(err)
+	}
+	if _, err := os.Stat("store/color_secret"); os.IsNotExist(err) {
+		secret := make([]byte, 32)
+		rand.Read(secret)
+		if err := os.WriteFile("store/color_secret", secret, 0744); err != nil {
+			log.Fatal(err)
+		}
+	}
+
 	db, err := buntdb.Open("store/data.db")
 	if err != nil {
 		log.Fatal(err)
@@ -164,7 +175,7 @@ func day() int64 {
 }
 
 func secret(day int64) string {
-	file, err := os.ReadFile("store/ssh_id_ed25519")
+	file, err := os.ReadFile("store/color_secret")
 	if err != nil {
 		log.Fatal(err)
 	}
