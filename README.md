@@ -20,4 +20,4 @@
 > questions or concerns? search the cmd below on zulip!
 > \*/
 
-# 🎨 ssh h.rcdis.co -p 2222
+# 🎨 ssh hex.recurse.cloud
