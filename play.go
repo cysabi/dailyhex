@@ -15,6 +15,7 @@ type Play struct {
 	state    *state
 	Input    textinput.Model
 	Viewport viewport.Model
+	movePos int
 }
 
 func (m Play) New() Play {
@@ -28,6 +29,7 @@ func (m Play) New() Play {
 	m.Viewport = viewport.New(12, m.state.height-10)
 	m.Viewport.SetContent(lipgloss.JoinVertical(0, m.displayMoves()...))
 	m.state.gameState = Idle
+	m.movePos = -1 // initialize move (guess) history at -1
 	return m
 }
 
@@ -44,6 +46,27 @@ func (m Play) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
+
+		// Up key: get previous move(s) in guess history
+		case tea.KeyUp:
+            moves := m.state.GetMoves()
+            if len(moves) > 0 {
+                if m.movePos < len(moves)-1 {
+                    m.movePos++
+                    m.Input.SetValue(moves[len(moves)-1-m.movePos])
+                }
+            }
+
+		// Down key: move forward in guess history, if already viewing history
+        case tea.KeyDown:
+             if m.movePos > 0 {
+                m.movePos--
+                moves := m.state.GetMoves()
+                m.Input.SetValue(moves[len(moves)-1-m.movePos])
+            } else if m.movePos == 0 {
+                m.movePos = -1
+                m.Input.SetValue("")
+            }
 
 		case tea.KeyEnter:
 			move := m.Input.Value()
