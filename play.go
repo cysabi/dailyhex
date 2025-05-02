@@ -56,6 +56,8 @@ func (m Play) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
                     m.Input.SetValue(moves[len(moves)-1-m.movePos])
                 }
             }
+			return m, nil  // Return early to prevent viewport processing
+
 
 		// Down key: move forward in guess history, if already viewing history
         case tea.KeyDown:
@@ -67,6 +69,8 @@ func (m Play) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
                 m.movePos = -1
                 m.Input.SetValue("")
             }
+			return m, nil  // Return early to prevent viewport processing
+
 
 		case tea.KeyEnter:
 			move := m.Input.Value()
