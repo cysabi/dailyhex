@@ -70,6 +70,7 @@ func (m Play) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case tea.KeyEnter:
 			move := m.Input.Value()
+			m.movePos = -1 // reset movePos
 
 			if len(move) != 6 {
 				m.state.gameState = Invalid
