@@ -15,18 +15,21 @@ type Play struct {
 	state    *state
 	Input    textinput.Model
 	Viewport viewport.Model
-	movePos int
+	movePos  int
 }
 
 func (m Play) New() Play {
 	ti := textinput.New()
 	ti.CharLimit = 6
 	ti.Width = 6
-	ti.Prompt = ""
+	ti.Prompt = " ?= "
+	ti.PromptStyle = m.state.styles.Base.Foreground(lipgloss.Color("8"))
+	ti.Placeholder = "######"
+	ti.PlaceholderStyle = m.state.styles.FormTheme.Blurred.TextInput.Placeholder
 	ti.Focus()
 
 	m.Input = ti
-	m.Viewport = viewport.New(12, m.state.height-10)
+	m.Viewport = viewport.New(16, m.state.height-10)
 	m.Viewport.SetContent(lipgloss.JoinVertical(0, m.displayMoves()...))
 	m.state.gameState = Idle
 	m.movePos = -1 // initialize move (guess) history at -1
@@ -49,28 +52,26 @@ func (m Play) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// Up key: get previous move(s) in guess history
 		case tea.KeyUp:
-            moves := m.state.GetMoves()
-            if len(moves) > 0 {
-                if m.movePos < len(moves)-1 {
-                    m.movePos++
-                    m.Input.SetValue(moves[len(moves)-1-m.movePos])
-                }
-            }
-			return m, nil  // Return early to prevent viewport processing
+			moves := m.state.GetMoves()
+			if len(moves) > 0 {
+				if m.movePos < len(moves)-1 {
+					m.movePos++
+					m.Input.SetValue(moves[len(moves)-1-m.movePos])
+				}
+			}
+			return m, nil // Return early to prevent viewport processing
 
-
-		// Down key: move forward in guess history, if already viewing history
-        case tea.KeyDown:
-             if m.movePos > 0 {
-                m.movePos--
-                moves := m.state.GetMoves()
-                m.Input.SetValue(moves[len(moves)-1-m.movePos])
-            } else if m.movePos == 0 {
-                m.movePos = -1
-                m.Input.SetValue("")
-            }
-			return m, nil  // Return early to prevent viewport processing
-
+			// Down key: move forward in guess history, if already viewing history
+		case tea.KeyDown:
+			if m.movePos > 0 {
+				m.movePos--
+				moves := m.state.GetMoves()
+				m.Input.SetValue(moves[len(moves)-1-m.movePos])
+			} else if m.movePos == 0 {
+				m.movePos = -1
+				m.Input.SetValue("")
+			}
+			return m, nil // Return early to prevent viewport processing
 
 		case tea.KeyEnter:
 			move := m.Input.Value()
@@ -120,7 +121,7 @@ func (m Play) View() string {
 		),
 	)
 
-	return lipgloss.JoinVertical(lipgloss.Center,
+	return lipgloss.JoinVertical(0,
 		input,
 		m.Viewport.View(),
 	)
@@ -194,6 +195,7 @@ func (m Play) displayMove(move string, grade []CharGrade) string {
 	return m.state.styles.MoveBox.Render(
 		lipgloss.JoinHorizontal(0,
 			m.state.styles.ColorBox.Background(lipgloss.Color("#"+move)).Render(),
+			m.Input.PromptStyle.Render(" == "),
 			text.String(),
 		))
 }
