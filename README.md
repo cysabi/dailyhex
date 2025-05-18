@@ -6,12 +6,12 @@
 
 🧋 served with https://charm.sh/bubbletea
 
-**never played wordle? here's a quick guide!**
+**never played wordle? here's a quick guide:**
 
 ```go
-Gray   { val: right, pos: wrong }
-Yellow { val: right, pos: wrong }
-Green  { val: right, pos: right }
+Gray   { wrong val, wrong pos }
+Yellow { right val, wrong pos }
+Green  { right val, right pos }
 
 /*
 make sure ur terminal supports truecolor

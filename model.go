@@ -145,7 +145,7 @@ func (m Model) View() string {
 		if m.state.showCountdown {
 			view = lipgloss.JoinVertical(0,
 				view,
-				m.state.styles.FormError.Render("* opens in "+dist()))
+				m.state.styles.FormError.Render("  * opens in "+dist()))
 		}
 		return lipgloss.Place(m.state.width, m.state.height, lipgloss.Center, lipgloss.Top,
 			lipgloss.JoinVertical(lipgloss.Center, banner, view))
