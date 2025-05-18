@@ -61,7 +61,7 @@ const (
 	TitleScreen Screen = "back to title"
 	PlayScreen  Screen = "play today!"
 	BoardScreen Screen = "see leaderboard"
-	HelpScreen  Screen = "help?"
+	HelpScreen  Screen = "how to play?"
 )
 
 func main() {
