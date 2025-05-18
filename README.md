@@ -6,19 +6,20 @@
 
 🧋 served with https://charm.sh/bubbletea
 
+**never played wordle? here's a quick guide!**
+
 ```go
+Gray   { val: right, pos: wrong }
+Yellow { val: right, pos: wrong }
+Green  { val: right, pos: right }
+
 /*
 make sure ur terminal supports truecolor
-unsure? the vscode terminal works!
+unsure? u can use the vscode terminal!
 
 if it prompts u for a pass, just hit enter
-ill ask u to make a ssh key
+ill ask u to make an ssh key
 
-never played wordle? here's a quick guide!
-gray   := wrong val wrong pos
-yellow := right val wrong pos
-green  := right val right pos
-
-questions or concerns? search the cmd below on zulip!
+questions or concerns? search `ssh hex.recurse.cloud` on zulip!
 */
 ```
