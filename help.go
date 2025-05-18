@@ -23,7 +23,6 @@ func (m Help) New() Help {
 	if err != nil {
 		log.Error(err)
 	}
-	log.Warn(m.state.styles.isDark)
 	stylePath := "glamour-light.json"
 	if m.state.styles.isDark {
 		stylePath = "glamour-dark.json"

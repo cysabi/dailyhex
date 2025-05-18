@@ -9,7 +9,7 @@
 ```go
 /*
 make sure ur terminal supports truecolor
-(unsure? the vscode terminal works!)
+unsure? the vscode terminal works!
 
 if it prompts u for a pass, just hit enter
 ill ask u to make a ssh key

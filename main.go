@@ -10,6 +10,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -21,6 +22,7 @@ import (
 	"github.com/charmbracelet/wish/activeterm"
 	"github.com/charmbracelet/wish/bubbletea"
 	"github.com/charmbracelet/wish/logging"
+	"github.com/creack/pty"
 	"github.com/muesli/termenv"
 	"github.com/tidwall/buntdb"
 	gosh "golang.org/x/crypto/ssh"
@@ -48,7 +50,7 @@ type state struct {
 type GameState string
 
 const (
-	Idle    GameState = "0"
+	Idle    GameState = "8"
 	Invalid GameState = "9"
 	Win     GameState = "10"
 )
@@ -59,6 +61,7 @@ const (
 	TitleScreen Screen = "back to title"
 	PlayScreen  Screen = "play today!"
 	BoardScreen Screen = "see leaderboard"
+	HelpScreen  Screen = "help?"
 )
 
 func main() {
@@ -88,57 +91,50 @@ func main() {
 			return true
 		}),
 		wish.WithMiddleware(
-			(func() wish.Middleware {
+			bubbletea.Middleware(func(s ssh.Session) (tea.Model, []tea.ProgramOption) {
+				clientOutput := outputFromSession(s)
+				pty, _, _ := s.Pty()
+				ren := bubbletea.MakeRenderer(s)
+				ren.SetOutput(clientOutput)
 
-				newProg := func(m tea.Model, opts ...tea.ProgramOption) *tea.Program {
-					p := tea.NewProgram(m, opts...)
-					return p
+				if s.PublicKey() == nil {
+					wish.Println(s, ren.NewStyle().Foreground(lipgloss.Color("5")).BorderForeground(lipgloss.Color("5")).Border(lipgloss.OuterHalfBlockBorder(), false, false, false, true).PaddingLeft(2).Render(
+						lipgloss.JoinVertical(0,
+							" ",
+							"welcome!! to play, first make a public key with",
+							" ",
+							ren.NewStyle().Bold(true).Render("ssh-keygen -t ed25519"),
+							" ",
+							"i just need this to keep track of your identity",
+							"have fun!",
+							" ")))
+					s.Exit(1)
+					return nil, nil
 				}
-				teaHandler := func(s ssh.Session) *tea.Program {
-					pty, _, _ := s.Pty()
-					ren := bubbletea.MakeRenderer(s)
 
-					if s.PublicKey() == nil {
-						wish.Println(s, ren.NewStyle().Foreground(lipgloss.Color("05")).BorderForeground(lipgloss.Color("05")).Border(lipgloss.OuterHalfBlockBorder(), false, false, false, true).PaddingLeft(2).Render(
-							lipgloss.JoinVertical(0,
-								" ",
-								"welcome!! to play, first make a public key with",
-								" ",
-								ren.NewStyle().Bold(true).Render("ssh-keygen -t ed25519"),
-								" ",
-								"i just need this to keep track of your identity",
-								"have fun!",
-								" ")))
-						s.Exit(1)
-						return nil
-					}
+				day := day()
+				secret := secret(day)
+				playerId := string(gosh.MarshalAuthorizedKey(s.PublicKey()))
 
-					day := day()
-					secret := secret(day)
-					playerId := string(gosh.MarshalAuthorizedKey(s.PublicKey()))
-
-					state := state{
-						db:            db,
-						day:           day,
-						secret:        secret,
-						playerid:      playerId,
-						height:        pty.Window.Height,
-						width:         pty.Window.Width,
-						showCountdown: false,
-						gameState:     Idle,
-						screen:        TitleScreen,
-						styles:        Styles{}.New(ren, secret),
-					}
-					if state.GetDone() {
-						state.gameState = Win
-					}
-
-					m := Model{state: &state}.New()
-
-					return newProg(m, append(bubbletea.MakeOptions(s), tea.WithAltScreen())...)
+				state := state{
+					db:            db,
+					day:           day,
+					secret:        secret,
+					playerid:      playerId,
+					height:        pty.Window.Height,
+					width:         pty.Window.Width,
+					showCountdown: false,
+					gameState:     Idle,
+					screen:        TitleScreen,
+					styles:        Styles{}.New(ren, secret),
 				}
-				return bubbletea.MiddlewareWithProgramHandler(teaHandler, termenv.TrueColor)
-			})(),
+				if state.GetDone() {
+					state.gameState = Win
+				}
+
+				m := Model{state: &state}.New()
+				return m, []tea.ProgramOption{tea.WithAltScreen()}
+			}),
 			activeterm.Middleware(),
 			logging.Middleware(),
 		),
@@ -164,6 +160,59 @@ func main() {
 	if err := s.Shutdown(ctx); err != nil && !errors.Is(err, ssh.ErrServerClosed) {
 		log.Error("Could not stop server", "error", err)
 	}
+}
+
+// Bridge Wish and Termenv so we can query for a user's terminal capabilities.
+type sshOutput struct {
+	ssh.Session
+	tty *os.File
+}
+
+func (s *sshOutput) Write(p []byte) (int, error) {
+	return s.Session.Write(p)
+}
+
+func (s *sshOutput) Read(p []byte) (int, error) {
+	return s.Session.Read(p)
+}
+
+func (s *sshOutput) Fd() uintptr {
+	return s.tty.Fd()
+}
+
+type sshEnviron struct {
+	environ []string
+}
+
+func (s *sshEnviron) Getenv(key string) string {
+	for _, v := range s.environ {
+		if strings.HasPrefix(v, key+"=") {
+			return v[len(key)+1:]
+		}
+	}
+	return ""
+}
+
+func (s *sshEnviron) Environ() []string {
+	return s.environ
+}
+
+func outputFromSession(sess ssh.Session) *termenv.Output {
+	sshPty, _, _ := sess.Pty()
+	_, tty, err := pty.Open()
+	if err != nil {
+		log.Fatal(err)
+	}
+	o := &sshOutput{
+		Session: sess,
+		tty:     tty,
+	}
+	environ := sess.Environ()
+	environ = append(environ, fmt.Sprintf("TERM=%s", sshPty.Term))
+	e := &sshEnviron{environ: environ}
+	// We need to use unsafe mode here because the ssh session is not running
+	// locally and we already know that the session is a TTY.
+	return termenv.NewOutput(o, termenv.WithUnsafe(), termenv.WithEnvironment(e))
 }
 
 func day() int64 {

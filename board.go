@@ -50,7 +50,7 @@ func (m Board) View() string {
 	tableWidth := m.state.width - 8
 	movesWidth := tableWidth - nameWidth
 
-	nameStyle := m.state.styles.BoardNames.Width(nameWidth)
+	nameStyle := m.state.styles.Base.Width(nameWidth)
 	movesStyle := m.state.styles.BoardGuesses.Width(movesWidth)
 
 	rows = append(rows,
@@ -79,12 +79,12 @@ func (m Board) View() string {
 			moves[i] = m.state.styles.BoardGrade.Background(lipgloss.Color("#" + hex)).Render("  ")
 		}
 
-		countColor := lipgloss.Color("7")
+		style := m.state.styles.MovesCount
 		if row[2] == "true" {
-			countColor = lipgloss.Color("2")
+			style = style.Foreground(lipgloss.Color("2")).Bold(true)
 		}
 
-		moves = append(moves, m.state.styles.CharGrade.Width(3).AlignHorizontal(lipgloss.Right).Foreground(countColor).Bold(row[2] == "true").Render(fmt.Sprint(lenMoves)))
+		moves = append(moves, style.Width(3).AlignHorizontal(lipgloss.Right).Render(fmt.Sprint(lenMoves)))
 		rows = append(rows,
 			lipgloss.JoinHorizontal(0,
 				nameStyle.Render(row[0]),
@@ -93,7 +93,7 @@ func (m Board) View() string {
 		)
 	}
 
-	return lipgloss.NewStyle().Width(m.state.width - 8).Height(m.state.height - 8).Render(lipgloss.JoinVertical(0, rows...))
+	return m.state.styles.Base.Width(m.state.width - 8).Height(m.state.height - 8).Render(lipgloss.JoinVertical(0, rows...))
 }
 
 func (m *Board) setPage() {

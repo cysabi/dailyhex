@@ -159,7 +159,7 @@ func (m Play) gradeMove(move string) []CharGrade {
 func (m Play) displayMove(move string, grade []CharGrade) string {
 	var text strings.Builder
 	for index, letter := range move {
-		str := m.state.styles.CharGrade.Foreground(lipgloss.Color(grade[index])).Render(string(letter))
+		str := m.state.styles.Base.Foreground(lipgloss.Color(grade[index])).Render(string(letter))
 		text.WriteString(str)
 	}
 
