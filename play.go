@@ -25,7 +25,7 @@ func (m Play) New() Play {
 	ti.Prompt = " ?= "
 	ti.PromptStyle = m.state.styles.Base.Foreground(lipgloss.Color("8"))
 	ti.Placeholder = "######"
-	ti.PlaceholderStyle = m.state.styles.FormTheme.Blurred.TextInput.Placeholder
+	ti.PlaceholderStyle = m.state.styles.Base.Foreground(lipgloss.AdaptiveColor{Light: "7", Dark: "0"})
 	ti.Focus()
 
 	m.Input = ti
@@ -37,7 +37,7 @@ func (m Play) New() Play {
 }
 
 func (m Play) Init() tea.Cmd {
-	return tea.Batch(textinput.Blink)
+	return textinput.Blink
 }
 
 func (m Play) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
