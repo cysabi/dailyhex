@@ -6,7 +6,7 @@
     "margin": 2
   },
   "block_quote": {
-    "color": "0",
+    "indent": 1,
     "indent_token": "│ "
   },
   "paragraph": {},
@@ -66,12 +66,12 @@
     "unticked": "[ ] "
   },
   "link": {
-    "color": "29",
-    "bold": true
-  },
-  "link_text": {
     "color": "36",
     "underline": true
+  },
+  "link_text": {
+    "color": "29",
+    "bold": true
   },
   "image": {
     "color": "205",
@@ -89,7 +89,7 @@
   },
   "code_block": {
     "color": "242",
-    "margin": 2,
+    "margin": 0,
     "chroma": {
       "text": {
         "color": "#2A2A2A"

@@ -16,12 +16,14 @@ type Model struct {
 	Title Title
 	Play  Play
 	Board Board
+	Help  Help
 }
 
 func (m Model) New() Model {
 	m.Title = Title{state: m.state}.New()
 	m.Play = Play{state: m.state}
 	m.Board = Board{state: m.state}
+	m.Help = Help{state: m.state}
 	return m
 }
 
@@ -82,6 +84,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.state.screen = newScreen
 				m.Board = m.Board.New()
 			}
+			if newScreen == HelpScreen {
+				m.state.screen = newScreen
+				m.Help = m.Help.New()
+			}
 		}
 
 	case PlayScreen:
@@ -95,6 +101,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		board, cmd := m.Board.Update(msg)
 		if b, ok := board.(Board); ok {
 			m.Board = b
+		}
+		cmds = append(cmds, cmd)
+
+	case HelpScreen:
+		help, cmd := m.Help.Update(msg)
+		if b, ok := help.(Help); ok {
+			m.Help = b
 		}
 		cmds = append(cmds, cmd)
 	}
@@ -120,7 +133,7 @@ func (m Model) View() string {
 		color = secret(m.state.day + m.state.dayPage)
 	}
 
-	banner := m.state.styles.CharGrade.Margin(2).Render(
+	banner := m.state.styles.Base.Margin(2).Render(
 		lipgloss.JoinVertical(0,
 			m.state.styles.Title.Foreground(lipgloss.Color("#"+color)).Render("dailyhex!"),
 			subtitle,
@@ -142,6 +155,9 @@ func (m Model) View() string {
 	case BoardScreen:
 		return lipgloss.Place(m.state.width, m.state.height, lipgloss.Center, lipgloss.Top,
 			lipgloss.JoinVertical(lipgloss.Center, banner, m.Board.View()))
+	case HelpScreen:
+		return lipgloss.Place(m.state.width, m.state.height, lipgloss.Center, lipgloss.Top,
+			lipgloss.JoinVertical(lipgloss.Center, banner, m.Help.View()))
 	}
 	return "uh oh"
 }

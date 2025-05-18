@@ -21,6 +21,7 @@ func (m Title) New() Title {
 
 	playOption := huh.NewOption(string(PlayScreen), PlayScreen)
 	boardOption := huh.NewOption(string(BoardScreen), BoardScreen)
+	helpOption := huh.NewOption(string(HelpScreen), HelpScreen)
 
 	if m.state.GetDone() {
 		playOption.Key = m.state.styles.Disabled.Render(string(PlayScreen))
@@ -41,7 +42,7 @@ func (m Title) New() Title {
 			),
 			huh.NewSelect[Screen]().
 				Key("screen").
-				Options(playOption, boardOption),
+				Options(playOption, boardOption, helpOption),
 		),
 	).WithWidth(formWidth).WithShowHelp(false).WithShowErrors(false).WithTheme(m.state.styles.FormTheme)
 
