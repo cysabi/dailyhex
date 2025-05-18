@@ -81,7 +81,7 @@ func (m Board) View() string {
 
 		style := m.state.styles.MovesCount
 		if row[2] == "true" {
-			style = style.Foreground(lipgloss.Color("2")).Bold(true)
+			style = style.Foreground(nil).Bold(true)
 		}
 
 		moves = append(moves, style.Width(3).AlignHorizontal(lipgloss.Right).Render(fmt.Sprint(lenMoves)))
