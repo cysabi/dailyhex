@@ -123,7 +123,8 @@ func (m Model) View() string {
 	}
 	if m.state.screen == BoardScreen {
 		styl := m.state.styles.BoardArrows
-		subtitle = m.state.styles.Subtitle.Render(styl.Render("< ") + m.state.styles.Base.Foreground(lipgloss.Color("8")).Render("day "+fmt.Sprint(m.state.day+m.state.dayPage)) + styl.Render(rightArrow))
+		subtitle = m.state.styles.Title.Render(
+			styl.Render("< ") + m.state.styles.Base.Foreground(lipgloss.Color("8")).Render("day "+fmt.Sprint(m.state.day+m.state.dayPage)) + styl.Render(rightArrow))
 	} else if m.state.gameState != Idle {
 		subtitle = m.state.styles.Subtitle.Foreground(lipgloss.Color(m.state.gameState)).Render(m.Play.StateMsg())
 	}
@@ -133,31 +134,27 @@ func (m Model) View() string {
 		color = secret(m.state.day + m.state.dayPage)
 	}
 
-	banner := m.state.styles.Base.Margin(2).Render(
+	banner := m.state.styles.Base.Width(m.state.width).Padding(2).AlignHorizontal(lipgloss.Center).Render(
 		lipgloss.JoinVertical(0,
-			m.state.styles.Title.Foreground(lipgloss.Color("#"+color)).Render("dailyhex!"),
+			m.state.styles.Title.Bold(true).Foreground(lipgloss.Color("#"+color)).Render("dailyhex!"),
 			subtitle,
 		),
 	)
+	view := ""
 	switch m.state.screen {
 	case TitleScreen:
-		view := m.Title.View()
+		view = m.Title.View()
 		if m.state.showCountdown {
 			view = lipgloss.JoinVertical(0,
 				view,
-				m.state.styles.FormError.Render("  * opens in "+dist()))
+				m.state.styles.FormError.Render("  * next in "+dist()))
 		}
-		return lipgloss.Place(m.state.width, m.state.height, lipgloss.Center, lipgloss.Top,
-			lipgloss.JoinVertical(lipgloss.Center, banner, view))
 	case PlayScreen:
-		return lipgloss.Place(m.state.width, m.state.height, lipgloss.Center, lipgloss.Top,
-			lipgloss.JoinVertical(lipgloss.Center, banner, m.Play.View()))
+		view = m.Play.View()
 	case BoardScreen:
-		return lipgloss.Place(m.state.width, m.state.height, lipgloss.Center, lipgloss.Top,
-			lipgloss.JoinVertical(lipgloss.Center, banner, m.Board.View()))
+		view = m.Board.View()
 	case HelpScreen:
-		return lipgloss.Place(m.state.width, m.state.height, lipgloss.Center, lipgloss.Top,
-			lipgloss.JoinVertical(lipgloss.Center, banner, m.Help.View()))
+		view = m.Help.View()
 	}
-	return "uh oh"
+	return lipgloss.JoinVertical(0, banner, lipgloss.PlaceHorizontal(m.state.width, lipgloss.Center, view))
 }
