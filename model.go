@@ -78,6 +78,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					m.state.screen = newScreen
 					m.Play = m.Play.New()
+					cmds = append(cmds, textinput.Blink)
 				}
 			}
 			if newScreen == BoardScreen {
