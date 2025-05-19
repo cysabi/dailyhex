@@ -112,7 +112,7 @@ func main() {
 				"> ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519 -N \"\" -C \"@hex.recurse.cloud\"",
 				" ",
 				"i just need this to keep track of your identity",
-				"have fun! (hit any key to esc)",
+				"have fun!",
 				" "), nil, nil)
 			return true
 		}),
