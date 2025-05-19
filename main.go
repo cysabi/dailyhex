@@ -87,28 +87,28 @@ func main() {
 		wish.WithPublicKeyAuth(func(ctx ssh.Context, key ssh.PublicKey) bool {
 			return true
 		}),
-		wish.WithPasswordAuth(func(ctx ssh.Context, password string) bool {
+		wish.WithKeyboardInteractiveAuth(func(ctx ssh.Context, challenger gosh.KeyboardInteractiveChallenge) bool {
+			challenger("", lipgloss.JoinVertical(0,
+				"",
+				"welcome!!",
+				"to play, first make a public key with",
+				"> ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519 -N \"\" -C \"@hex.recurse.cloud\"",
+				" ",
+				"i just need this to keep track of your identity",
+				"have fun! (hit any key to esc)",
+				" "), nil, nil)
 			return true
 		}),
 		wish.WithMiddleware(
-			bubbletea.Middleware(func(s ssh.Session) (tea.Model, []tea.ProgramOption) {
-				clientOutput := outputFromSession(s)
-				pty, _, _ := s.Pty()
-				ren := bubbletea.MakeRenderer(s)
-				ren.SetOutput(clientOutput)
+			bubbletea.Middleware(func(sess ssh.Session) (tea.Model, []tea.ProgramOption) {
+				if sess.PublicKey() == nil {
+					sess.Exit(1)
+					return nil, nil
+				}
 
-				if s.PublicKey() == nil {
-					wish.Println(s, ren.NewStyle().Foreground(lipgloss.Color("5")).BorderForeground(lipgloss.Color("5")).Border(lipgloss.OuterHalfBlockBorder(), false, false, false, true).PaddingLeft(2).Render(
-						lipgloss.JoinVertical(0,
-							" ",
-							"welcome!! to play, first make a public key with",
-							" ",
-							ren.NewStyle().Bold(true).Render("ssh-keygen -t ed25519"),
-							" ",
-							"i just need this to keep track of your identity",
-							"have fun!",
-							" ")))
-					s.Exit(1)
+				output := newOutput(sess)
+				pty, _, active := sess.Pty()
+				if !active {
 					return nil, nil
 				}
 
