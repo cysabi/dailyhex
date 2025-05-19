@@ -64,6 +64,23 @@ const (
 	HelpScreen  Screen = "help"
 )
 
+func day() int64 {
+	loc, _ := time.LoadLocation("America/New_York")
+	now := time.Now().In(loc)
+	shifted := now.Add(-11 * time.Hour)
+	midnight := time.Date(shifted.Year(), shifted.Month(), shifted.Day(), 0, 0, 0, 0, loc)
+	return midnight.Unix() / 86400
+}
+
+func secret(day int64) string {
+	file, err := os.ReadFile("store/color_secret")
+	if err != nil {
+		log.Fatal(err)
+	}
+	hash := sha256.Sum256(fmt.Append(file, day))
+	return hex.EncodeToString(hash[:3])
+}
+
 func main() {
 	if err := os.MkdirAll("store", 0744); err != nil {
 		log.Fatal(err)
@@ -112,9 +129,24 @@ func main() {
 					return nil, nil
 				}
 
+				ren := bubbletea.MakeRenderer(sess)
+				ren.SetOutput(output)
+				if ren.ColorProfile() != termenv.TrueColor {
+					cmd := sess.Command()
+					profileNames := [4]string{"TrueColor", "ANSI256", "ANSI", "Ascii"}
+					if len(cmd) > 0 && (cmd[0] == "truecolor") {
+						fmt.Fprintf(sess.Stderr(), "Forcing \"TrueColor\" (normally %q)\r\n",
+							profileNames[ren.ColorProfile()])
+						ren.SetColorProfile(termenv.TrueColor)
+					} else {
+						fmt.Fprintf(sess.Stderr(), "Rendering %q instead of \"TrueColor\".\r\n",
+							profileNames[ren.ColorProfile()])
+					}
+				}
+
 				day := day()
 				secret := secret(day)
-				playerId := string(gosh.MarshalAuthorizedKey(s.PublicKey()))
+				playerId := string(gosh.MarshalAuthorizedKey(sess.PublicKey()))
 
 				state := state{
 					db:            db,
@@ -139,6 +171,7 @@ func main() {
 			logging.Middleware(),
 		),
 	)
+
 	if err != nil {
 		log.Error("Could not start server", "error", err)
 	}
@@ -197,7 +230,7 @@ func (s *sshEnviron) Environ() []string {
 	return s.environ
 }
 
-func outputFromSession(sess ssh.Session) *termenv.Output {
+func newOutput(sess ssh.Session) *termenv.Output {
 	sshPty, _, _ := sess.Pty()
 	_, tty, err := pty.Open()
 	if err != nil {
@@ -213,21 +246,4 @@ func outputFromSession(sess ssh.Session) *termenv.Output {
 	// We need to use unsafe mode here because the ssh session is not running
 	// locally and we already know that the session is a TTY.
 	return termenv.NewOutput(o, termenv.WithUnsafe(), termenv.WithEnvironment(e))
-}
-
-func day() int64 {
-	loc, _ := time.LoadLocation("America/New_York")
-	now := time.Now().In(loc)
-	shifted := now.Add(-11 * time.Hour)
-	midnight := time.Date(shifted.Year(), shifted.Month(), shifted.Day(), 0, 0, 0, 0, loc)
-	return midnight.Unix() / 86400
-}
-
-func secret(day int64) string {
-	file, err := os.ReadFile("store/color_secret")
-	if err != nil {
-		log.Fatal(err)
-	}
-	hash := sha256.Sum256(fmt.Append(file, day))
-	return hex.EncodeToString(hash[:3])
 }
