@@ -14,10 +14,10 @@ Yellow { right val, wrong pos }
 Green  { right val, right pos }
 
 /*
-this game is works best with a truecolor terminal!
-if you're getting a false negative, u can run `ssh -t <hostname> truecolor` to force truecolor rendering
-if you're unsure, the vscode terminal works!
+this game is works best in a truecolor terminal!
+unsure abt your term? the vscode one works
+getting a false negative? u can run `ssh -t <hostname> truecolor` to override the auto-detect
 
-any questions or concerns? search `ssh hex.recurse.cloud` on zulip!
+any other questions or concerns? search `ssh hex.recurse.cloud` on zulip!
 */
 ```
