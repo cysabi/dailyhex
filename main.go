@@ -109,12 +109,12 @@ func main() {
 		wish.WithKeyboardInteractiveAuth(func(ctx ssh.Context, challenger gosh.KeyboardInteractiveChallenge) bool {
 			challenger("", lipgloss.JoinVertical(0,
 				"",
-				"🎨 welcome!!",
-				"🎨 to play, first make a public key with",
-				"🎨 > ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519 -N \"\" -C \"@hex.recurse.cloud\"",
-				"🎨  ",
-				"🎨 i just need this to keep track of your identity",
-				"🎨 have fun!",
+				"welcome!!",
+				"to play, first make a public key with",
+				"> ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519 -N \"\" -C \"@hex.recurse.cloud\"",
+				" ",
+				"i just need this to keep track of your identity",
+				"have fun!",
 				" "), nil, nil)
 			return true
 		}),
@@ -171,7 +171,7 @@ func main() {
 						return
 					}
 
-					wish.Println(sess, "🎨 requires an active pty! did you remember to do "+lipgloss.NewStyle().Bold(true).Render("-t")+"?")
+					wish.Println(sess, "requires an active pty! did you remember to do "+lipgloss.NewStyle().Bold(true).Render("-t")+"?")
 					_ = sess.Exit(1)
 				}
 			},
