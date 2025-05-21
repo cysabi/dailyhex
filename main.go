@@ -19,6 +19,7 @@ import (
 	"github.com/charmbracelet/log"
 	"github.com/charmbracelet/ssh"
 	"github.com/charmbracelet/wish"
+	"github.com/charmbracelet/wish/activeterm"
 	"github.com/charmbracelet/wish/bubbletea"
 	"github.com/charmbracelet/wish/logging"
 	"github.com/creack/pty"
@@ -163,18 +164,7 @@ func main() {
 				m := Model{state: &state}.New()
 				return m, []tea.ProgramOption{tea.WithAltScreen()}
 			}),
-			func(next ssh.Handler) ssh.Handler {
-				return func(sess ssh.Session) {
-					_, _, active := sess.Pty()
-					if active {
-						next(sess)
-						return
-					}
-
-					wish.Println(sess, "requires an active pty! did you remember to do "+lipgloss.NewStyle().Bold(true).Render("-t")+"?")
-					_ = sess.Exit(1)
-				}
-			},
+			activeterm.Middleware(),
 			logging.Middleware(),
 		),
 	)
