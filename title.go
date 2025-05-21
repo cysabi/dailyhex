@@ -88,12 +88,6 @@ func (m Title) View() string {
 }
 
 func profileKey(s state) string {
-
-	// ansi256 on
-
-	// truecolor on (forced)
-	// ansi256 on
-
 	profile, forced := s.ren.ColorProfile(), s.GetForceProfile()
 
 	out := ""
