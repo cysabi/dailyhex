@@ -9,6 +9,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/muesli/termenv"
 )
 
 type Title struct {
@@ -16,18 +17,24 @@ type Title struct {
 	Form  *huh.Form
 }
 
-func (m Title) New() Title {
+func (m Title) New(selected int) Title {
 	username := m.state.GetName()
 
-	playOption := huh.NewOption(string(PlayScreen), PlayScreen)
-	boardOption := huh.NewOption(string(BoardScreen), BoardScreen)
-	helpOption := huh.NewOption(string(HelpScreen), HelpScreen)
+	options := []huh.Option[Screen]{
+		huh.NewOption(string(PlayScreen), PlayScreen),
+		huh.NewOption(string(BoardScreen), BoardScreen),
+		huh.NewOption(string(HelpScreen), HelpScreen),
+		huh.NewOption(profileKey(*m.state), ProfileScreen),
+	}
 
 	if m.state.GetDone() {
-		playOption.Key = m.state.styles.Disabled.Render(string(PlayScreen))
-		if !m.state.showCountdown {
-			boardOption = boardOption.Selected(true)
+		options[0].Key = m.state.styles.Disabled.Render(string(PlayScreen))
+		if selected == -1 {
+			options[1] = options[1].Selected(true)
 		}
+	}
+	if selected != -1 {
+		options[selected] = options[selected].Selected(true)
 	}
 
 	form := huh.NewForm(
@@ -42,7 +49,7 @@ func (m Title) New() Title {
 			),
 			huh.NewSelect[Screen]().
 				Key("screen").
-				Options(playOption, boardOption, helpOption),
+				Options(options...),
 		),
 	).WithWidth(formWidth).WithShowHelp(false).WithShowErrors(false).WithTheme(m.state.styles.FormTheme)
 
@@ -78,6 +85,27 @@ func (m Title) View() string {
 		return m.state.styles.FormBox.Render(m.Form.View())
 	}
 
+}
+
+func profileKey(s state) string {
+
+	// ansi256 on
+
+	// truecolor on (forced)
+	// ansi256 on
+
+	profile, forced := s.ren.ColorProfile(), s.GetForceProfile()
+
+	out := ""
+	if profile == termenv.TrueColor {
+		out += "on"
+	} else {
+		out += "off"
+	}
+	if forced {
+		out += " -f"
+	}
+	return "truecolor? " + s.styles.Base.Bold(true).Render(out)
 }
 
 func dist() string {

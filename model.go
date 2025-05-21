@@ -20,7 +20,7 @@ type Model struct {
 }
 
 func (m Model) New() Model {
-	m.Title = Title{state: m.state}.New()
+	m.Title = Title{state: m.state}.New(-1)
 	m.Play = Play{state: m.state}
 	m.Board = Board{state: m.state}
 	m.Help = Help{state: m.state}
@@ -44,7 +44,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.state.showCountdown = false
 		if m.state.screen == PlayScreen && m.state.gameState == Win {
 			m.state.screen = TitleScreen
-			m.Title = m.Title.New()
+			m.Title = m.Title.New(-1)
 			return m, nil
 		}
 		switch msg.Type {
@@ -53,7 +53,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tea.Quit
 			}
 			m.state.screen = TitleScreen
-			m.Title = m.Title.New()
+			m.Title = m.Title.New(-1)
 			return m, nil
 		}
 	}
@@ -74,7 +74,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if newScreen == PlayScreen {
 				if m.state.GetDone() {
 					m.state.showCountdown = true
-					m.Title = m.Title.New()
+					m.Title = m.Title.New(0)
 				} else {
 					m.state.screen = newScreen
 					m.Play = m.Play.New()
@@ -88,6 +88,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if newScreen == HelpScreen {
 				m.state.screen = newScreen
 				m.Help = m.Help.New()
+			}
+			if newScreen == ProfileScreen {
+				m.state.ToggleForceProfile()
+				m.Title = m.Title.New(3)
 			}
 		}
 

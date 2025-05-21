@@ -19,7 +19,6 @@ import (
 	"github.com/charmbracelet/log"
 	"github.com/charmbracelet/ssh"
 	"github.com/charmbracelet/wish"
-	"github.com/charmbracelet/wish/activeterm"
 	"github.com/charmbracelet/wish/bubbletea"
 	"github.com/charmbracelet/wish/logging"
 	"github.com/creack/pty"
@@ -35,10 +34,12 @@ const (
 
 type state struct {
 	db            *buntdb.DB
+	ren           *lipgloss.Renderer
 	day           int64
 	dayPage       int64
 	secret        string
 	playerid      string
+	sessProfile   termenv.Profile
 	height        int
 	width         int
 	showCountdown bool
@@ -58,10 +59,11 @@ const (
 type Screen string
 
 const (
-	TitleScreen Screen = "back to title"
-	PlayScreen  Screen = "play today!"
-	BoardScreen Screen = "see leaderboard"
-	HelpScreen  Screen = "help"
+	TitleScreen   Screen = "back to title"
+	PlayScreen    Screen = "play today!"
+	BoardScreen   Screen = "see leaderboard"
+	HelpScreen    Screen = "help"
+	ProfileScreen Screen = "truecolor: %s"
 )
 
 func day() int64 {
@@ -107,12 +109,12 @@ func main() {
 		wish.WithKeyboardInteractiveAuth(func(ctx ssh.Context, challenger gosh.KeyboardInteractiveChallenge) bool {
 			challenger("", lipgloss.JoinVertical(0,
 				"",
-				"welcome!!",
-				"to play, first make a public key with",
-				"> ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519 -N \"\" -C \"@hex.recurse.cloud\"",
-				" ",
-				"i just need this to keep track of your identity",
-				"have fun!",
+				"🎨 welcome!!",
+				"🎨 to play, first make a public key with",
+				"🎨 > ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519 -N \"\" -C \"@hex.recurse.cloud\"",
+				"🎨  ",
+				"🎨 i just need this to keep track of your identity",
+				"🎨 have fun!",
 				" "), nil, nil)
 			return true
 		}),
@@ -131,18 +133,6 @@ func main() {
 
 				ren := bubbletea.MakeRenderer(sess)
 				ren.SetOutput(output)
-				if ren.ColorProfile() != termenv.TrueColor {
-					cmd := sess.Command()
-					profileNames := [4]string{"TrueColor", "ANSI256", "ANSI", "Ascii"}
-					if len(cmd) > 0 && (cmd[0] == "truecolor") {
-						fmt.Fprintf(sess.Stderr(), "Forcing \"TrueColor\" (normally %q)\r\n",
-							profileNames[ren.ColorProfile()])
-						ren.SetColorProfile(termenv.TrueColor)
-					} else {
-						fmt.Fprintf(sess.Stderr(), "Rendering %q instead of \"TrueColor\".\r\n",
-							profileNames[ren.ColorProfile()])
-					}
-				}
 
 				day := day()
 				secret := secret(day)
@@ -150,9 +140,11 @@ func main() {
 
 				state := state{
 					db:            db,
+					ren:           ren,
 					day:           day,
 					secret:        secret,
 					playerid:      playerId,
+					sessProfile:   ren.ColorProfile(),
 					height:        pty.Window.Height,
 					width:         pty.Window.Width,
 					showCountdown: false,
@@ -160,14 +152,29 @@ func main() {
 					screen:        TitleScreen,
 					styles:        Styles{}.New(ren, secret),
 				}
+
 				if state.GetDone() {
 					state.gameState = Win
+				}
+				if state.GetForceProfile() {
+					state.ren.SetColorProfile(termenv.TrueColor)
 				}
 
 				m := Model{state: &state}.New()
 				return m, []tea.ProgramOption{tea.WithAltScreen()}
 			}),
-			activeterm.Middleware(),
+			func(next ssh.Handler) ssh.Handler {
+				return func(sess ssh.Session) {
+					_, _, active := sess.Pty()
+					if active {
+						next(sess)
+						return
+					}
+
+					wish.Println(sess, "🎨 requires an active pty! did you remember to do "+lipgloss.NewStyle().Bold(true).Render("-t")+"?")
+					_ = sess.Exit(1)
+				}
+			},
 			logging.Middleware(),
 		),
 	)

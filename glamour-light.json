@@ -10,10 +10,6 @@
     "color": "#7c7f93",
     "indent_token": "│ "
   },
-  "paragraph": {},
-  "list": {
-    "level_indent": 2
-  },
   "heading": {
     "block_suffix": "\n",
     "color": "27",
@@ -41,10 +37,6 @@
     "chroma": {
       "text": {
         "color": "#4c4f69"
-      },
-      "error": {
-        "color": "#4c4f69",
-        "background_color": "#d20f39"
       },
       "comment": {
         "color": "#4c4f69"
@@ -128,13 +120,5 @@
         "background_color": "#e6e9ef"
       }
     }
-  },
-  "table": {},
-  "definition_list": {},
-  "definition_term": {},
-  "definition_description": {
-    "block_prefix": "\n🠶 "
-  },
-  "html_block": {},
-  "html_span": {}
+  }
 }

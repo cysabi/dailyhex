@@ -2,22 +2,25 @@
 
 ⏰ resets each day @ 11am rc time <3
 
-🎨 curious how hex codes work? check out https://colorrush.io/learn
+🎨 curious how hex codes work? check out _colorrush.io/learn_
 
-🧋 served with https://charm.sh/bubbletea
+🧋 served with _charm.sh/bubbletea_
 
-**never played wordle? here's a quick guide:**
+> /\*
+> this game works best in a truecolor terminal!
+> unsure abt yours? try using the vscode one
+>
+> never played wordle? here's a quick guide:
 
 ```go
-Gray   { wrong val, wrong pos }
-Yellow { right val, wrong pos }
-Green  { right val, right pos }
-
-/*
-this game works best in a truecolor terminal!
-unsure abt your term? try using the vscode one
-getting a false negative? u can run `ssh -t <hostname> truecolor` to override the auto-detect
-
-any other questions or concerns? search `ssh hex.recurse.cloud` on zulip!
-*/
+const (
+    Green  = `right val` + `right pos`
+    Yellow = `right val` + `wrong pos`
+    Gray   = `wrong val` + `wrong pos`
+)
 ```
+
+> any other questions or concerns? search the cmd below on zulip!
+> \*/
+
+`ssh hex.recurse.cloud`

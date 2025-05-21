@@ -4,23 +4,11 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/muesli/termenv"
 	"github.com/tidwall/buntdb"
-	// - set `[playerid]:name`
-	// get turns
 )
 
-func (s state) GetName() string {
-	var out string
-	key := fmt.Sprint(s.playerid) + ":" + "name"
-	s.db.View(func(tx *buntdb.Tx) error {
-		val, _ := tx.Get(key)
-		out = val
-		return nil
-	})
-
-	return out
-}
-
+// board
 func (s state) GetBoard() [][]string {
 	var out [][]string
 
@@ -40,18 +28,7 @@ func (s state) GetBoard() [][]string {
 	return out
 }
 
-func (s state) GetDone() bool {
-	var out string
-	key := fmt.Sprint(s.day) + ":" + fmt.Sprint(s.playerid) + ":" + "done"
-	s.db.View(func(tx *buntdb.Tx) error {
-		val, _ := tx.Get(key)
-		out = val
-		return nil
-	})
-
-	return out == "true"
-}
-
+// moves
 func (s state) GetMoves() []string {
 	var out string
 	key := fmt.Sprint(s.day) + ":" + fmt.Sprint(s.playerid) + ":" + "moves"
@@ -82,6 +59,19 @@ func (s state) AppendMove(move string) error {
 	})
 }
 
+// done
+func (s state) GetDone() bool {
+	var out string
+	key := fmt.Sprint(s.day) + ":" + fmt.Sprint(s.playerid) + ":" + "done"
+	s.db.View(func(tx *buntdb.Tx) error {
+		val, _ := tx.Get(key)
+		out = val
+		return nil
+	})
+
+	return out == "true"
+}
+
 func (s state) SetDone(done bool) error {
 	key := fmt.Sprint(s.day) + ":" + fmt.Sprint(s.playerid) + ":" + "done"
 	return s.db.Update(func(tx *buntdb.Tx) error {
@@ -90,10 +80,54 @@ func (s state) SetDone(done bool) error {
 	})
 }
 
+// name
+func (s state) GetName() string {
+	var out string
+	key := fmt.Sprint(s.playerid) + ":" + "name"
+	s.db.View(func(tx *buntdb.Tx) error {
+		val, _ := tx.Get(key)
+		out = val
+		return nil
+	})
+
+	return out
+}
+
 func (s state) SetName(name string) error {
 	key := fmt.Sprint(s.playerid) + ":" + "name"
 	return s.db.Update(func(tx *buntdb.Tx) error {
 		_, _, err := tx.Set(key, name, nil)
+		return err
+	})
+}
+
+// color profile
+func (s state) GetForceProfile() bool {
+	var out string
+	key := fmt.Sprint(s.playerid) + ":" + "force"
+	s.db.View(func(tx *buntdb.Tx) error {
+		val, _ := tx.Get(key)
+		out = val
+		return nil
+	})
+
+	return out == "true"
+}
+
+func (s *state) ToggleForceProfile() error {
+	key := fmt.Sprint(s.playerid) + ":" + "force"
+	return s.db.Update(func(tx *buntdb.Tx) error {
+		val, _ := tx.Get(key)
+
+		newVal := !(val == "true")
+
+		if newVal {
+			s.ren.SetColorProfile(termenv.TrueColor)
+		} else {
+			s.ren.SetColorProfile(s.sessProfile)
+		}
+
+		_, _, err := tx.Set(key, fmt.Sprint(newVal), nil)
 		return err
 	})
 }
