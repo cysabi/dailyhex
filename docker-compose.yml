@@ -1,6 +1,8 @@
 services:
   app:
+    tty: true
+    ports:
+      - "22:22"
     build: .
     volumes:
       - ./store:/usr/src/app/store
-    network_mode: "host"
