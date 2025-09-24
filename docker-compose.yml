@@ -1,6 +1,7 @@
 services:
   app:
     tty: true
+    restart: always
     ports:
       - "22:22"
     build: .
