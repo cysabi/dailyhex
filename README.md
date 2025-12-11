@@ -23,4 +23,4 @@ const (
 > any other questions or concerns? search the cmd below on zulip!
 > \*/
 
-`ssh hex.recurse.cloud`
+# 🎨 ssh hex.recurse.cloud
