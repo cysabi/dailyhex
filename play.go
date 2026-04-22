@@ -102,9 +102,6 @@ func (m Play) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	m.Viewport, cmd = m.Viewport.Update(msg)
-	cmds = append(cmds, cmd)
-
 	m.Input, cmd = m.Input.Update(msg)
 	cmds = append(cmds, cmd)
 
